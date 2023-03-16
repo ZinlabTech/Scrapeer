@@ -69,26 +69,21 @@ class Scraper {
 			return $final_result;
 		}
 
-		$max_iterations = isset( $max_trackers ) ? $max_trackers : count( $trackers );
 		foreach ( $trackers as $index => $tracker ) {
-			if ( ! empty( $this->infohashes ) && $index < $max_iterations ) {
-				$tracker_info = parse_url( $tracker );
-				$protocol = $tracker_info['scheme'];
-				$host = $tracker_info['host'];
-				if ( empty( $protocol ) || empty( $host ) ) {
-					$this->errors[] = 'Skipping invalid tracker (' . $tracker . ').';
-					continue;
-				}
+            $tracker_info = parse_url( $tracker );
+            $protocol = $tracker_info['scheme'];
+            $host = $tracker_info['host'];
+            if ( empty( $protocol ) || empty( $host ) ) {
+                $this->errors[] = 'Skipping invalid tracker (' . $tracker . ').';
+                continue;
+            }
 
-				$port = isset( $tracker_info['port'] ) ? $tracker_info['port'] : null;
-				$path = isset( $tracker_info['path'] ) ? $tracker_info['path'] : null;
-				$path_array = $path ? explode( '/', rtrim( $path, '/' ), 3 ) : array();
-				$passkey = count( $path_array ) > 2  ? '/' . $path_array[1] : '';
-				$result = $this->try_scrape( $protocol, $host, $port, $passkey, $timeout );
-				$final_result = array_merge( $final_result, $result );
-				continue;
-			}
-			break;
+            $port = isset( $tracker_info['port'] ) ? $tracker_info['port'] : null;
+            $path = isset( $tracker_info['path'] ) ? $tracker_info['path'] : null;
+            $path_array = $path ? explode( '/', rtrim( $path, '/' ), 3 ) : array();
+            $passkey = count( $path_array ) > 2  ? '/' . $path_array[1] : '';
+            $result = $this->try_scrape( $protocol, $host, $port, $passkey, $timeout );
+            $final_result[] = $result;
 		}
 		return $final_result;
 	}
@@ -107,7 +102,7 @@ class Scraper {
 	 */
 	private function try_scrape( string $protocol, string $host, $port, string $passkey, $timeout ) {
 		$infohashes = $this->infohashes;
-		$this->infohashes = array();
+		// $this->infohashes = array();
 		$results = array();
 		try {
 			switch ( $protocol ) {
@@ -305,7 +300,7 @@ class Scraper {
 	private function udp_create_connection( $timeout, string $host, $port ) {
 		$socket = socket_create( AF_INET, SOCK_DGRAM, SOL_UDP );
 
-		if ( ! is_resource( $socket ) ) {
+		if ( !$socket ) {
 			throw new \Exception( "Couldn't create socket." );
 		}
 
