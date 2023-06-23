@@ -72,7 +72,9 @@ class Scraper
         }
 
         foreach ($trackers as $index => $tracker) {
+            $tracker = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $tracker);
             $tracker_info = parse_url($tracker);
+
             $protocol = $tracker_info['scheme'];
             $host = $tracker_info['host'];
             if (empty($protocol) || empty($host)) {
